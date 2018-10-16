@@ -233,7 +233,7 @@ if [ -f "$ORACLE_BASE/.db_configured" ]; then
   echo "The following output is now a tail of the alert.log:"
   # This is just not doing it for me.. how about some beef with a bun and a pickle?
   if [ -f $ORACLE_BASE/diag/rdbms/${ORACLE_SID}/${ORACLE_SID}/trace/alert${ORACLE_SID}.log ]; then
-    tail -f $ORACLE_BASE/diag/rdbms/${ORACLE_SID}/${ORACLE_SID}/trace/alert${ORACLE_SID}.log &
+    tail -f $ORACLE_BASE/diag/rdbms/${ORACLE_SID}/${ORACLE_SID}/trace/alert_${ORACLE_SID}.log &
     childPID=$!
     wait $childPID
   else
