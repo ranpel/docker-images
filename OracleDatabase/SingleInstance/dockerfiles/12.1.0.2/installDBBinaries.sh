@@ -9,6 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+# October 2018: Dyn DNS Dev (ddd) - catcdb_int.sql replace for custom slimmer db
 
 EDITION=$1
 
@@ -83,6 +84,9 @@ rm -rf $ORACLE_HOME/suptools && \
 rm -rf /tmp/* && \
 # Database files directory
 rm -rf $INSTALL_DIR/database
+###
+# (ddd) add more removes here after proof & re-proofing custom dyndns dbs
+###
 
 # Check whether Perl is working
 chmod ug+x $INSTALL_DIR/$PERL_INSTALL_FILE && \

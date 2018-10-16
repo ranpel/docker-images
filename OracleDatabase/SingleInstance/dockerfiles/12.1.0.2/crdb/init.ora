@@ -1,0 +1,19 @@
+db_block_size=8192
+open_cursors=300
+db_name="dddcdb"
+control_files=("/opt/oracle/oradata/dddcdb/control01.ctl", "/opt/oracle/oradata/fast_recovery_area/dddcdb/control02.ctl")
+db_recovery_file_dest="/opt/oracle/oradata/fast_recovery_area"
+db_recovery_file_dest_size=4815m
+compatible=12.1.0.2.0
+diagnostic_dest=/opt/oracle
+enable_pluggable_database=true
+processes=300
+sga_target=768m
+db_create_file_dest="/opt/oracle/oradata/dddcdb"
+audit_file_dest="/opt/oracle/admin/dddcdb/adump"
+audit_sys_operations=false
+audit_trail=none
+remote_login_passwordfile=EXCLUSIVE
+dispatchers="(PROTOCOL=TCP) (SERVICE=dddcdbXDB)"
+pga_aggregate_target=256m
+undo_tablespace=UNDOTBS1

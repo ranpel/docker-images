@@ -12,38 +12,44 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+# October, 2018: Dyn DNS Dev (ddd) - Custom cr db limiting db extras
 
 set -e
 
+echo
+echo "DEBUG -> $*"
+echo
+
 # Check whether ORACLE_SID is passed on
-export ORACLE_SID=${1:-ORCLCDB}
+export ORACLE_SID=${1:-dddcdb}
 
 # Check whether ORACLE_PDB is passed on
-export ORACLE_PDB=${2:-ORCLPDB1}
+export ORACLE_PDB=${2:-dns}
 
 # Auto generate ORACLE PWD if not passed on
-export ORACLE_PWD=${3:-"`openssl rand -base64 8`1"}
+# interesting bash var ditty - vv - but this is dev, maybe loosen it up a little..
+#export ORACLE_PWD=${3:-"`openssl rand -base64 8`1"}
+export ORACLE_PWD=${3:-"oracle"}
+echo
 echo "ORACLE PASSWORD FOR SYS, SYSTEM AND PDBADMIN: $ORACLE_PWD";
-
-# Replace place holders in response file
-cp $ORACLE_BASE/$CONFIG_RSP $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_SID###|$ORACLE_SID|g" $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_PDB###|$ORACLE_PDB|g" $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_PWD###|$ORACLE_PWD|g" $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" $ORACLE_BASE/dbca.rsp
+echo
 
 # If there is greater than 8 CPUs default back to dbca memory calculations
 # dbca will automatically pick 40% of available memory for Oracle DB
 # The minimum of 2G is for small environments to guarantee that Oracle has enough memory to function
 # However, bigger environment can and should use more of the available memory
 # This is due to Github Issue #307
-if [ `nproc` -gt 8 ]; then
-   sed -i -e 's|TOTALMEMORY = "2048"||g' $ORACLE_BASE/dbca.rsp
-fi;
+#if [ `nproc` -gt 8 ]; then
+#   sed -i -e 's|TOTALMEMORY = "2048"||g' $ORACLE_BASE/dbca.rsp
+#fi;
+# redirect mem and other db info option writes direct to crdb sql (or just define in stone)
 
 # Create network related config files (sqlnet.ora, tnsnames.ora, listener.ora)
 mkdir -p $ORACLE_HOME/network/admin
-echo "NAME.DIRECTORY_PATH= (TNSNAMES, EZCONNECT, HOSTNAME)" > $ORACLE_HOME/network/admin/sqlnet.ora
+# sqlnet.ora: added beef
+echo "NAME.DIRECTORY_PATH= (TNSNAMES, EZCONNECT, HOSTNAME)
+SQLNET.INBOUND_CONNECT_TIMEOUT = 120
+SQLNET.EXPIRE_TIME=10" > $ORACLE_HOME/network/admin/sqlnet.ora
 
 # Listener.ora
 echo "LISTENER = 
@@ -58,14 +64,16 @@ DEDICATED_THROUGH_BROKER_LISTENER=ON
 DIAG_ADR_ENABLED = off
 " > $ORACLE_HOME/network/admin/listener.ora
 
-# Start LISTENER and run DBCA
-lsnrctl start &&
-dbca -silent -responseFile $ORACLE_BASE/dbca.rsp ||
- cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||
- cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID.log
-
-echo "$ORACLE_SID=localhost:1521/$ORACLE_SID" > $ORACLE_HOME/network/admin/tnsnames.ora
-echo "$ORACLE_PDB= 
+# no cdb entry added? check if not then add - check.
+echo "$ORACLE_SID= 
+(DESCRIPTION = 
+  (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = 1521))
+  (CONNECT_DATA =
+    (SERVER = DEDICATED)
+    (SERVICE_NAME = $ORACLE_SID)
+  )
+)
+$ORACLE_PDB= 
 (DESCRIPTION = 
   (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = 1521))
   (CONNECT_DATA =
@@ -74,12 +82,45 @@ echo "$ORACLE_PDB=
   )
 )" >> $ORACLE_HOME/network/admin/tnsnames.ora
 
-# Remove second control file, make PDB auto open
-sqlplus / as sysdba << EOF
-   ALTER SYSTEM SET control_files='$ORACLE_BASE/oradata/$ORACLE_SID/control01.ctl' scope=spfile;
-   ALTER PLUGGABLE DATABASE $ORACLE_PDB SAVE STATE;
-   exit;
-EOF
+# Start LISTENER and run crdb SQL
+lsnrctl start &&
 
-# Remove temporary response file
-rm $ORACLE_BASE/dbca.rsp
+echo "Sleeping 5 ..."
+sleep 5
+
+# (ddd) cr db prereqs
+# at present && testing ORACLE_SID hardcoded to dddcdb (mind case issues)
+
+echo "Setting up for create cdb..."
+
+if [ -f ${ORACLE_BASE}/crdb.tar ]; then
+  pushd .
+  cd $ORACLE_BASE
+  tar xvf crdb.tar
+else
+  echo "ERROR: $0 DDD custom create database package not found.  Cannot continue."
+  exit 1
+fi
+
+# enter build dir extracted from above - crdb logging is here too
+cd $ORACLE_BASE/crdb
+ 
+if [ ! -d ${ORACLE_HOME}/dbs ]; then
+  mkdir -f ${ORACLE_HOME}/dbs
+fi
+
+echo "Entering create cdb..."
+cd $ORACLE_BASE/crdb
+./dddcdb.sh | tee -a $ORACLE_BASE/crdb/create_ddd.log
+
+touch $ORACLE_BASE/.db_configured
+
+# potential hold here and post crdb sql adds
+# <delete Remove second control file,/> make PDB auto open (if we have, holding..)
+# moved to crdb
+#sqlplus / as sysdba << EOF
+#--   ALTER SYSTEM SET control_files='$ORACLE_BASE/oradata/$ORACLE_SID/control01.ctl' scope=spfile;
+#   ALTER PLUGGABLE DATABASE $ORACLE_PDB SAVE STATE;
+#   exit;
+#EOF
+

@@ -15,11 +15,14 @@
 ORACLE_SID="`grep $ORACLE_HOME /etc/oratab | cut -d: -f1`"
 ORACLE_PDB="`ls -dl $ORACLE_BASE/oradata/$ORACLE_SID/*/ | grep -v pdbseed | awk '{print $9}' | cut -d/ -f6`"
 POSITIVE_RETURN="READ WRITE"
-ORAENV_ASK=NO
-source oraenv
+#ORAENV_ASK=NO
+#source oraenv
+ORACLE_HOME=/opt/oracle/product/12.1.0.2/dbhome_1
+ORACLE_SID=dddcdb
+ORACLE_PDB=dns
 
 # Check Oracle DB status and store it in status
-status=`sqlplus -s / as sysdba << EOF
+status=`$ORACLE_HOME/bin/sqlplus -s / as sysdba << EOF
    set heading off;
    set pagesize 0;
    SELECT open_mode FROM v\\$pdbs WHERE UPPER(name) = UPPER('$ORACLE_PDB');
