@@ -229,12 +229,20 @@ fi;
 if [ -f "$ORACLE_BASE/.db_configured" ]; then
   echo
   echo "The following output is now a tail of the alert.log:"
-  tail -f $ORACLE_BASE/diag/rdbms/${ORACLE_SID}/${ORACLE_SID}/trace/alert${ORACLE_SID}.log &
-  childPID=$!
-  wait $childPID
+  # This is just not doing it for me.. how about some beef with a bun and a pickle?
+  if [ -f $ORACLE_BASE/diag/rdbms/${ORACLE_SID}/${ORACLE_SID}/trace/alert${ORACLE_SID}.log ]; then
+    tail -f $ORACLE_BASE/diag/rdbms/${ORACLE_SID}/${ORACLE_SID}/trace/alert${ORACLE_SID}.log &
+    childPID=$!
+    wait $childPID
+  else
+    echo
+    echo "Could not stat the database trace file.  Have a shell instead.."
+    bash
+    exit 0
+  fi
 else
   echo
-  echo "No trace file detected - check paths and sid case in diag dir."
+  echo "No database configured file detected - check paths and sid case in diag dir."
   echo "  Connect and investigate..."
   echo
   echo "Starting bash to maybe jig a fix.  Container will exit on exit."
