@@ -181,8 +181,10 @@ if [ -f $ORACLE_BASE/.db_configured ]; then
     # Start database
     $ORACLE_BASE/$START_FILE;
   else
-    echo "Entered Start for existing database and failed to feel comfortable.  Cannot continue."
-    exit 1
+    echo "Entered Start for existing database and failed to feel comfortable.  Cannot start database."
+    echo "Opening shell to permit some investigation..  container will exit on exit."
+    bash
+    exit 2
   fi
 else
   echo

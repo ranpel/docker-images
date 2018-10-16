@@ -7,12 +7,12 @@ create spfile='/opt/oracle/product/12.1.0.2/dbhome_1/dbs/spfiledddcdb.ora' FROM 
 conn /as sysdba
 host perl /opt/oracle/product/12.1.0.2/dbhome_1/rdbms/admin/catcon.pl -n 1 -l /opt/oracle/crdb -b utlrp /opt/oracle/product/12.1.0.2/dbhome_1/rdbms/admin/utlrp.sql;
 select comp_id, status from dba_registry;
+create undo tablespace undo datafile '/opt/oracle/oradata/dddcdb/undo01.dbf' size 20M;
+alter system set undo_tablespace=undo;
 shutdown immediate;
 conn /as sysdba
 startup ;
 conn /as sysdba
 exec dbms_xdb_config.sethttpsport(5500);
-create undo tablespace undo datafile '/opt/oracle/oradata/dddcdb/undo01.dbf' size 20M;
-alter system set undo_tablespace=undo;
 drop tablespace undotbs1 including contents and datafiles;
 spool off

@@ -114,13 +114,3 @@ cd $ORACLE_BASE/crdb
 ./dddcdb.sh | tee -a $ORACLE_BASE/crdb/create_ddd.log
 
 touch $ORACLE_BASE/.db_configured
-
-# potential hold here and post crdb sql adds
-# <delete Remove second control file,/> make PDB auto open (if we have, holding..)
-# moved to crdb
-#sqlplus / as sysdba << EOF
-#--   ALTER SYSTEM SET control_files='$ORACLE_BASE/oradata/$ORACLE_SID/control01.ctl' scope=spfile;
-#   ALTER PLUGGABLE DATABASE $ORACLE_PDB SAVE STATE;
-#   exit;
-#EOF
-
