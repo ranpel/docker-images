@@ -7,10 +7,11 @@
 # Author: gerald.venzl@oracle.com
 # Description: Checks the status of Oracle Database.
 # Return codes: 0 = PDB is open and ready to use
-#               1 = PDB is not open
-#               2 = Sql Plus execution failed
+#          1 = PDB is not open
+#          2 = Sql Plus execution failed
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+# (ddd) - some basic cron and docker knowledge is slightly out of reach atm - i.e. I'm irritated so... clean aud here, I guess. grumble.
 
 ORACLE_SID="`grep $ORACLE_HOME /etc/oratab | cut -d: -f1`"
 ORACLE_PDB="`ls -dl $ORACLE_BASE/oradata/$ORACLE_SID/*/ | grep -v pdbseed | awk '{print $9}' | cut -d/ -f6`"
@@ -23,10 +24,10 @@ ORACLE_PDB=dns
 
 # Check Oracle DB status and store it in status
 status=`$ORACLE_HOME/bin/sqlplus -s / as sysdba << EOF
-   set heading off;
-   set pagesize 0;
-   SELECT open_mode FROM v\\$pdbs WHERE UPPER(name) = UPPER('$ORACLE_PDB');
-   exit;
+  set heading off;
+  set pagesize 0;
+  SELECT open_mode FROM v\\$pdbs WHERE UPPER(name) = UPPER('$ORACLE_PDB');
+  exit;
 EOF`
 
 # Store return code from SQL*Plus
@@ -34,11 +35,12 @@ ret=$?
 
 # SQL Plus execution was successful and PDB is open
 if [ $ret -eq 0 ] && [ "$status" = "$POSITIVE_RETURN" ]; then
-   exit 0;
+  /bin/rm -f /opt/oracle/admin/dddcdb/adump/*.aud >/dev/null 2>&1
+  exit 0;
 # PDB is not open
 elif [ "$status" != "$POSITIVE_RETURN" ]; then
-   exit 1;
+  exit 1;
 # SQL Plus execution failed
 else
-   exit 2;
+  exit 2;
 fi;
