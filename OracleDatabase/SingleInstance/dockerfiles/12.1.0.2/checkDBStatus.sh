@@ -11,7 +11,7 @@
 #          2 = Sql Plus execution failed
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
-# (ddd) - some basic cron and docker knowledge is slightly out of reach atm - i.e. I'm irritated so... clean aud here, I guess. grumble.
+# (cdbdev) - some basic cron and docker knowledge is slightly out of reach atm - i.e. I'm irritated so... clean aud here, I guess. grumble.
 
 ORACLE_SID="`grep $ORACLE_HOME /etc/oratab | cut -d: -f1`"
 ORACLE_PDB="`ls -dl $ORACLE_BASE/oradata/$ORACLE_SID/*/ | grep -v pdbseed | awk '{print $9}' | cut -d/ -f6`"
@@ -19,8 +19,8 @@ POSITIVE_RETURN="READ WRITE"
 #ORAENV_ASK=NO
 #source oraenv
 ORACLE_HOME=/opt/oracle/product/12.1.0.2/dbhome_1
-ORACLE_SID=dddcdb
-ORACLE_PDB=dns
+ORACLE_SID=cdbdev
+ORACLE_PDB=pdbdev
 
 # Check Oracle DB status and store it in status
 status=`$ORACLE_HOME/bin/sqlplus -s / as sysdba << EOF
@@ -35,7 +35,7 @@ ret=$?
 
 # SQL Plus execution was successful and PDB is open
 if [ $ret -eq 0 ] && [ "$status" = "$POSITIVE_RETURN" ]; then
-  /bin/rm -f /opt/oracle/admin/dddcdb/adump/*.aud >/dev/null 2>&1
+  /bin/rm -f /opt/oracle/admin/cdbdev/adump/*.aud >/dev/null 2>&1
   exit 0;
 # PDB is not open
 elif [ "$status" != "$POSITIVE_RETURN" ]; then

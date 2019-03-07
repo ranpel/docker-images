@@ -12,7 +12,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
-# October, 2018: Dyn DNS Dev (ddd) - Custom cr db limiting db extras
+# October, 2018: Dev (cdbdev) - Custom cr db limiting db extras
 
 set -e
 
@@ -21,10 +21,10 @@ echo "DEBUG -> $*"
 echo
 
 # Check whether ORACLE_SID is passed on
-export ORACLE_SID=${1:-dddcdb}
+export ORACLE_SID=${1:-cdbdev}
 
 # Check whether ORACLE_PDB is passed on
-export ORACLE_PDB=${2:-dns}
+export ORACLE_PDB=${2:-pdbdev}
 
 # Auto generate ORACLE PWD if not passed on
 # interesting bash var ditty - vv - but this is dev, maybe loosen it up a little..
@@ -88,8 +88,8 @@ lsnrctl start &&
 echo "Sleeping 5 ..."
 sleep 5
 
-# (ddd) cr db prereqs
-# at present && testing ORACLE_SID hardcoded to dddcdb (mind case issues)
+# (cdbdev) cr db prereqs
+# at present && testing ORACLE_SID hardcoded to cdbdev (mind case issues)
 
 echo "Setting up for create cdb..."
 
@@ -98,7 +98,7 @@ if [ -f ${ORACLE_BASE}/crdb.tar ]; then
   cd $ORACLE_BASE
   tar xvf crdb.tar
 else
-  echo "ERROR: $0 DDD custom create database package not found.  Cannot continue."
+  echo "ERROR: $0 Dev custom create database package not found.  Cannot continue."
   exit 1
 fi
 
@@ -111,6 +111,10 @@ fi
 
 echo "Entering create cdb..."
 cd $ORACLE_BASE/crdb
-./dddcdb.sh | tee -a $ORACLE_BASE/crdb/create_ddd.log
+./cdbdev.sh | tee -a $ORACLE_BASE/crdb/create_cdbdev.log
 
 touch $ORACLE_BASE/.db_configured
+# open perms on home to allow root entry into the container
+chmod 755 $HOME
+cd $ORACLE_HOME
+rm -rf `cat $ORACLE_BASE/crdb/oh_trim`

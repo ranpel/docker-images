@@ -9,7 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
-# October 2018: Dyn DNS Dev (ddd) - adjust to custom CREATE DATABASE requirement for option trimmed dns db
+# October 2019: Dev (crdbdev) - adjust to custom CREATE DATABASE requirement for option trimmed db
 
 ########### SIGINT handler ############
 function _int() {
@@ -72,7 +72,7 @@ trap _kill SIGKILL
 
 # Default for ORACLE SID
 if [ "$ORACLE_SID" == "" ]; then
-   export ORACLE_SID=dddcdb
+   export ORACLE_SID=cdbdev
 else
   # Make ORACLE_SID upper case
   # Github issue # 984
@@ -95,7 +95,7 @@ else
 fi;
 
 # Default for ORACLE PDB
-export ORACLE_PDB=${ORACLE_PDB:-dns}
+export ORACLE_PDB=${ORACLE_PDB:-pdbdev}
 
 # Make ORACLE_PDB upper case
 # Github issue # 984
@@ -121,7 +121,7 @@ else
   echo "Building database: $ORACLE_SID"
   echo
   # Create database
-  # (ddd - this is now CREATE DATABASE custom crdb)
+  # (cdbdev - this is now CREATE DATABASE custom crdb)
   $ORACLE_BASE/$CREATE_DB_FILE $ORACLE_SID $ORACLE_PDB $ORACLE_PWD;
    
   # Execute custom provided setup scripts
@@ -151,7 +151,7 @@ fi;
 
 # Tail on alert log and wait (otherwise container will exit)
 # watch case if we allow upper :( *highly* recommend going lower and sticking to it.)
-# (ddd)
+# (cdbdev)
 if [ -f "$ORACLE_BASE/.db_configured" ]; then
   echo
   echo "The following output is now a tail of the alert.log:"

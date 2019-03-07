@@ -13,11 +13,7 @@
 ORACLE_PWD=$1
 ORACLE_SID="`grep $ORACLE_HOME /etc/oratab | cut -d: -f1`"
 ORACLE_PDB="`ls -dl $ORACLE_BASE/oradata/$ORACLE_SID/*/ | grep -v pdbseed | awk '{print $9}' | cut -d/ -f6`"
-if [ "${ORACLE_PDB}" = "dns" ]; then
-  PDB_ADMIN=dns
-else
-  PDB_ADMIN=pdbadmin
-fi
+PDB_ADMIN=pdbadmin
 ORAENV_ASK=NO
 source oraenv
 

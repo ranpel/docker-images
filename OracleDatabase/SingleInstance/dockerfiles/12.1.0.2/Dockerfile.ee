@@ -31,7 +31,7 @@ MAINTAINER Gerald Venzl <gerald.venzl@oracle.com>
 # -------------------------------------------------------------
 ENV ORACLE_BASE=/opt/oracle \
     ORACLE_HOME=/opt/oracle/product/12.1.0.2/dbhome_1 \
-    ORACLE_SID=dddcdb \
+    ORACLE_SID=cdbdev \
     INSTALL_DIR=/opt/install \
     INSTALL_FILE_1="linuxamd64_12102_database_1of2.zip" \
     INSTALL_FILE_2="linuxamd64_12102_database_2of2.zip" \
@@ -76,7 +76,7 @@ FROM base AS builder
 ARG DB_EDITION
 
 # Install unzip for unzip operation
-# (ddd) add vi for now
+# (cdbdev) add vi
 RUN yum -y install unzip
 
 # Copy DB install file
@@ -104,7 +104,8 @@ RUN $ORACLE_BASE/oraInventory/orainstRoot.sh && \
     echo "Deploying oratab with $ORACLE_SID" && \ 
     echo "${ORACLE_SID}:${ORACLE_HOME}:Y" >> /etc/oratab && \
     chown oracle.oinstall /etc/oratab && \
-    yum -y install vi
+    yum -y install vi && \
+    rm -rf /var/cache/*
 
 USER oracle
 WORKDIR /home/oracle

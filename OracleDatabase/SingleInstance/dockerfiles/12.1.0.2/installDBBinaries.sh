@@ -9,7 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
-# October 2018: Dyn DNS Dev (ddd) - catcdb_int.sql replace for custom slimmer db
+# October 2019: Dev (crdbdev) - catcdb_int.sql replace for custom slimmer db
 
 EDITION=$1
 
@@ -85,7 +85,7 @@ rm -rf /tmp/* && \
 # Database files directory
 rm -rf $INSTALL_DIR/database
 ###
-# (ddd) add more removes here after proof & re-proofing custom dyndns dbs
+# (cdbdev) add more removes here after proof & re-proofing custom dbs
 ###
 
 # Check whether Perl is working
